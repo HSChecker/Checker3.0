@@ -28,7 +28,7 @@ public class LOCK {
         }
     }
 
-    public static Str get(String s){
+    public synchronized static Str get(String s){
         for(Str a:lock){
             if(a.getLockName().equals(s)){
                 return a;

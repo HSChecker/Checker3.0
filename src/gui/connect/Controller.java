@@ -1,5 +1,8 @@
 package gui.connect;
 
+import Link.ConnectIntyerface;
+import Link.ConnectListen;
+import Link.LinkServer;
 import gui.model.Model;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -9,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import tools.FILE;
 import tools.LOCK;
+import tools.NET;
 import tools.PARAMETER;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,6 +25,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.io.*;
 import java.util.Optional;
 
+import static tools.OTHER.isNumeric;
 import static tools.PARAMETER.PATH;
 import static tools.PARAMETER.ls;
 
@@ -196,14 +201,159 @@ public class Controller {
         dialog.getDialogPane().setPrefWidth(300);
         dialog.getDialogPane().setContentText("正在连接到服务器......(请勿关闭，关闭即取消)");
 
-        PARAMETER.ls = new LinkServer(dialog,(ServerData)Table.getSelectionModel().getSelectedItem(),pane);
-        dialog.showAndWait();
-        if(PARAMETER.ls.isLinkSuccect()){
-            synchronized (LOCK.get("waitDialogClose")) {
-                LOCK.get("waitDialogClose").notifyAll();
-            }
-            LOCK.remove("waitDialogClose");
+        ls = new LinkServer((ServerData)Table.getSelectionModel().getSelectedItem());
+        synchronized (LOCK.add("lsRUN")){
+            LOCK.get("lsRUN").wait();
         }
+        LOCK.remove("lsRUN");
+
+        ls.addListen(new ConnectListen("connect"){
+            @Override
+            public void run(String[] packet) {
+                if(packet[1].equals("true")){
+                    dialog.getDialogPane().setContentText("已确认身份，链接成功，即将进入登录大厅");
+                    ButtonType buttonTypeCancel = new ButtonType("确认", ButtonBar.ButtonData.CANCEL_CLOSE);
+                    dialog.getDialogPane().getButtonTypes().addAll(buttonTypeCancel);
+                    dialog.setHeight(dialog.getHeight()+50);
+                } else {
+                    dialog.getDialogPane().setContentText("连接失败，请重新连接");
+                    ButtonType buttonTypeCancel = new ButtonType("确认", ButtonBar.ButtonData.CANCEL_CLOSE);
+                    dialog.getDialogPane().getButtonTypes().addAll(buttonTypeCancel);
+                    dialog.setHeight(dialog.getHeight()+50);
+                    ls.closeLink();
+                }
+            }
+        });
+
+        ls.getBw().println("requseConnect");
+        ls.getBw().flush();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                    if(!ls.isLinkSuccect()){
+                        ls.closeLink();
+                        Platform.runLater(()-> {
+                            dialog.close();
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("链接失败");
+                            alert.setContentText("目标服务器连接超时！");
+                            alert.showAndWait();
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        dialog.showAndWait();
+
+        if(!dialog.getDialogPane().getContentText().equals("已确认身份，链接成功，即将进入登录大厅"))
+            return;
+
+        //登陆注册用户框
+        Dialog<Pair<String, String>> login = new Dialog<>();
+        login.setTitle("登录/注册 界面");
+
+        // 设置头部图片
+        ImageView iv = new ImageView("file:/" + PATH + "/image/ico/login.png");
+        iv.setFitHeight(100);
+        iv.setFitWidth(100);
+        login.setGraphic(iv);
+
+        ButtonType loginButtonType = new ButtonType("登录", ButtonBar.ButtonData.OK_DONE);
+        ButtonType registerButtonType = new ButtonType("注册");
+        login.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+        login.getDialogPane().getButtonTypes().addAll(registerButtonType);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField name = new TextField();
+        name.setPromptText("用户名");
+        PasswordField password = new PasswordField();
+        password.setPromptText("密码");
+
+        grid.add(new Label("用户名:"), 0, 0);
+        grid.add(name, 1, 0);
+        grid.add(new Label("密码:"), 0, 1);
+        grid.add(password, 1, 1);
+
+        Node loginButton = login.getDialogPane().lookupButton(loginButtonType);
+        Node regButton = login.getDialogPane().lookupButton(registerButtonType);
+        loginButton.setDisable(true);
+        regButton.setDisable(true);
+
+        // 是哟功能 Java 8 lambda 表达式进行校验
+        name.textProperty().addListener((observable, oldValue, newValue) -> {
+            loginButton.setDisable(newValue.trim().isEmpty() || password.getText().trim().isEmpty());
+            regButton.setDisable(newValue.trim().isEmpty() || password.getText().trim().isEmpty());
+        });
+
+        password.textProperty().addListener((observable, oldValue, newValue) -> {
+            loginButton.setDisable(newValue.trim().isEmpty() || name.getText().trim().isEmpty());
+            regButton.setDisable(newValue.trim().isEmpty() || name.getText().trim().isEmpty());
+        });
+
+        login.getDialogPane().setContent(grid);
+
+        // 默认光标在用户名上
+        Platform.runLater(() -> name.requestFocus());
+
+        // 登录按钮后，将结果转为username-password-pair
+        login.setResultConverter(dialogButton -> {
+            if (dialogButton == loginButtonType) {
+                return new Pair<>("login login " + name.getText(), password.getText());
+            }
+
+            if (dialogButton == registerButtonType) {
+                return new Pair<>("login register " + name.getText(), password.getText());
+            }
+            return null;
+        });
+
+        ls.addListen(new ConnectListen("loginResult") {
+            @Override
+            public void run(String[] packet) {
+                if(packet[1].equals("true")) {
+                    Platform.runLater(()-> {
+                        Stage stage = (Stage) pane.getScene().getWindow();
+                        stage.close();
+                    });
+                    new Model();
+                }else{
+                    Platform.runLater(()-> {
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("登录失败");
+                        alert.setContentText(packet[2]);
+                        alert.showAndWait();
+                    });
+                    ls.closeLink();
+                }
+            }
+        });
+
+        Optional<Pair<String, String>> result = login.showAndWait();
+
+        result.ifPresent(usernamePassword -> {
+            if(!isNumeric(NET.turnPacketData(usernamePassword.getKey())[2])){
+                Platform.runLater(()-> {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("登录失败");
+                    alert.setContentText("在账号仅能为数字");
+                    alert.showAndWait();
+                    ls.closeLink();
+                    return;
+                });
+            }else {
+                ls.getBw().println(usernamePassword.getKey() + " " + usernamePassword.getValue());
+                ls.getBw().flush();
+            }
+        });
     }
 
     @FXML
@@ -228,15 +378,6 @@ public class Controller {
         prot.setCellValueFactory(new PropertyValueFactory<>("prot"));
 
         Table.setItems(dataList);
-    }
-
-    public static boolean isNumeric(String str){
-        for(int i=str.length();--i>=0;){
-            int chr=str.charAt(i);
-            if(chr<48 || chr>57)
-                return false;
-        }
-        return true;
     }
 
 }
