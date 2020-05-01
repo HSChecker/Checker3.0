@@ -1,6 +1,8 @@
-package gui.connect;
+package Link;
 
 
+import gui.connect.Controller;
+import gui.connect.ServerData;
 import gui.model.Model;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -19,6 +21,8 @@ import tools.PARAMETER;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
@@ -33,6 +37,7 @@ import static tools.PARAMETER.ls;
  */
 public class LinkServer implements Runnable{
 
+    /**
     private Dialog dialog;
     private ServerData sd;
     private boolean linkSuccect = false;
@@ -48,62 +53,71 @@ public class LinkServer implements Runnable{
         this.pane = pane;
         new Thread(this).start();
     }
+     */
+    private boolean linkSuccect = false;
+    private ServerData sd;
+    private Socket socket;
+    private Thread th;
+
+    private PrintWriter bw = null;
+
+    private List<ConnectIntyerface> Listen = new ArrayList<ConnectIntyerface>();
+
+    public LinkServer(ServerData sd) {
+        this.sd = sd;
+        th = new Thread(this);
+        th.start();
+    }
 
     @Override
     public void run() {
-        Socket socket = null;
+        BufferedReader br = null;
         try {
-            try {
-                socket = new Socket(sd.getAdress(),Integer.parseInt(sd.getProt()));
-            } catch(ConnectException e){
-                Platform.runLater(()-> {
-                    dialog.getDialogPane().setContentText("连接失败，即将退出");
-                });
-                sleep(1000);
-                Platform.runLater(()->{
-                    ButtonType buttonTypeCancel = new ButtonType("确认", ButtonBar.ButtonData.CANCEL_CLOSE);
-                    dialog.getDialogPane().getButtonTypes().addAll(buttonTypeCancel);
-                    dialog.setHeight(dialog.getHeight()+50);
-                });
-                return;
-            }
+
+            socket = new Socket(sd.getAdress(), Integer.parseInt(sd.getProt()));
+            linkSuccect = true;
             br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             bw = new PrintWriter(socket.getOutputStream());
-            Platform.runLater(()->{
-                dialog.getDialogPane().setContentText("链接成功，等待返回确认......");
-            });
-            String[] sure = NET.turnPacketData(br.readLine());
-            if(sure[0].equals("sure")){
-                Platform.runLater(()->{
-                    dialog.getDialogPane().setContentText("已确认身份，链接成功，即将进入登录大厅");
-                });
-                bw.println("sure "+PARAMETER.version);
-                bw.flush();
-                linkSuccect = true;
-                sleep(1000);
-                Platform.runLater(()->{
-                    ButtonType buttonTypeCancel = new ButtonType("确认", ButtonBar.ButtonData.CANCEL_CLOSE);
-                    dialog.getDialogPane().getButtonTypes().addAll(buttonTypeCancel);
-                    dialog.setHeight(dialog.getHeight()+50);
-                });
-            }else{
-                dialog.getDialogPane().setContentText("确认失败，即将退出链接");
-                sleep(1000);
-                Platform.runLater(()->{
-                    ButtonType buttonTypeCancel = new ButtonType("确认", ButtonBar.ButtonData.CANCEL_CLOSE);
-                    dialog.getDialogPane().getButtonTypes().addAll(buttonTypeCancel);
-                    dialog.setHeight(dialog.getHeight()+50);
-                });
-                return;
+            synchronized (LOCK.get("lsRUN")) {
+                LOCK.get("lsRUN").notifyAll();
             }
-            //窗口关闭等待
-            synchronized (LOCK.add("waitDialogClose")){
-                try{
-                    LOCK.get("waitDialogClose").wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+            while (true) {
+                String[] packet = NET.turnPacketData(br.readLine());
+                List<ConnectIntyerface> remove = new ArrayList<ConnectIntyerface>();
+                for (ConnectIntyerface li : Listen) {
+                    if (li.whetherRun(packet[0])) {
+                        li.run(packet);
+                        if (!li.isPermanent())
+                            remove.add(li);
+                    }
                 }
+                for (ConnectIntyerface r : remove)
+                    Listen.remove(r);
             }
+
+
+        } catch (ConnectException e) {
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(br!=null)
+                    br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(bw!=null) {
+                bw.flush();
+                bw.close();
+            }
+        }
+
+        /**
+        Socket socket = null;
+        try {
+            //窗口关闭等待
 
             String[] loginResult = null;
             Platform.runLater(()-> {
@@ -226,19 +240,32 @@ public class LinkServer implements Runnable{
         } catch (Exception e) {
             e.printStackTrace();
         }
+         */
 
 
+    }
+
+    public void addListen(ConnectIntyerface ct){
+        Listen.add(ct);
+    }
+
+    public PrintWriter getBw() {
+        return bw;
     }
 
     public boolean isLinkSuccect() {
         return linkSuccect;
     }
 
-    public BufferedReader getBr() {
-        return br;
+    public void closeLink(){
+        try {
+            if(socket != null)
+                socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            th.stop();
+        }
     }
 
-    public PrintWriter getBw() {
-        return bw;
-    }
 }

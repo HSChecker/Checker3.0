@@ -1,6 +1,6 @@
 package tools;
 
-import gui.connect.LinkServer;
+import Link.LinkServer;
 
 /**
  * PARAMETER¿‡

@@ -1,4 +1,3 @@
-import gui.connect.LinkServer;
 import gui.start.Start;
 import javafx.application.Application;
 import javafx.stage.Stage;

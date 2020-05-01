@@ -10,54 +10,82 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane fx:controller="gui.model.Controller" fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-  <columnConstraints>
-      <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0" prefWidth="10.0" />
-      <ColumnConstraints fillWidth="false" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="80.0" percentWidth="40.0" prefWidth="338.0" />
-      <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="409.0" minWidth="80.0" percentWidth="10.0" prefWidth="338.0" />
-      <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="409.0" minWidth="80.0" percentWidth="20.0" prefWidth="338.0" />
-    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="296.0" minWidth="10.0" percentWidth="15.0" prefWidth="168.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints maxHeight="129.0" minHeight="0.0" percentHeight="15.0" prefHeight="0.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="348.0" minHeight="10.0" percentHeight="70.0" prefHeight="241.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="99.0" minHeight="0.0" percentHeight="15.0" prefHeight="99.0" vgrow="SOMETIMES" />
-  </rowConstraints>
-   <children>
-      <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="20000.0" prefWidth="20000.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
+
+<BorderPane fx:controller="gui.model.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <MenuBar BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="状态">
+            <items>
+              <MenuItem mnemonicParsing="false" text="退出登录" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="信息">
+            <items>
+              <MenuItem mnemonicParsing="false" text="修改名称" />
+                  <MenuItem mnemonicParsing="false" text="修改头像" />
+                  <MenuItem mnemonicParsing="false" text="修改密码" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="其他">
+            <items>
+              <MenuItem mnemonicParsing="false" text="关于作者" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <center>
+      <GridPane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomOtherMe" text="其他人 VS 我" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomMeAI" text="我 VS AI" wrapText="true" />
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomAIMe" text="AI VS 我" GridPane.rowIndex="1" />
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomMeOther" text="我 VS 其他人" GridPane.columnIndex="1" />
+            <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="20000.0" prefWidth="20000.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                  <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomOtherMe" text="其他人 VS 我" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomMeAI" text="我 VS AI" wrapText="true" />
+                  <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomAIMe" text="AI VS 我" GridPane.rowIndex="1" />
+                  <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createRoomMeOther" text="我 VS 其他人" GridPane.columnIndex="1" />
+               </children>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+            </GridPane>
+            <GridPane prefHeight="20000.0" prefWidth="20000.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+               <children>
+                  <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#joinRoom" text="加入房间" GridPane.rowIndex="2" />
+                  <TextField fx:id="roomID" maxWidth="1.7976931348623157E308" promptText="输入房间号......" GridPane.rowIndex="1" />
+                  <Label ellipsisString="" prefHeight="101.0" prefWidth="120.0" text="创建房间~  或输入房间号加入房间吧~" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+            </GridPane>
          </children>
+         <columnConstraints>
+            <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0" prefWidth="10.0" />
+            <ColumnConstraints fillWidth="false" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="80.0" percentWidth="40.0" prefWidth="338.0" />
+            <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="409.0" minWidth="80.0" percentWidth="10.0" prefWidth="338.0" />
+            <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="409.0" minWidth="80.0" percentWidth="20.0" prefWidth="338.0" />
+            <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="296.0" minWidth="10.0" percentWidth="15.0" prefWidth="168.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints maxHeight="129.0" minHeight="0.0" percentHeight="15.0" prefHeight="0.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="348.0" minHeight="10.0" percentHeight="70.0" prefHeight="241.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="99.0" minHeight="0.0" percentHeight="15.0" prefHeight="99.0" vgrow="SOMETIMES" />
+         </rowConstraints>
       </GridPane>
-      <GridPane prefHeight="20000.0" prefWidth="20000.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#joinRoom" text="加入房间" GridPane.rowIndex="2" />
-            <TextField fx:id="roomID" maxWidth="1.7976931348623157E308" promptText="输入房间号......" GridPane.rowIndex="1" />
-            <Label ellipsisString="" prefHeight="101.0" prefWidth="120.0" text="创建房间~  或输入房间号加入房间吧~" wrapText="true">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
-         </children>
-      </GridPane>
-   </children>
-</GridPane>
+   </center>
+</BorderPane>
